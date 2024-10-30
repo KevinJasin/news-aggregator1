@@ -1,25 +1,62 @@
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
+  padding: 0;
+  width: 400px; /* Fixed width for the extension */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  font-family: Arial, sans-serif;
+}
+
+.container {
   padding: 10px;
-  width: 300px;
 }
 
 h1 {
-  font-size: 20px;
+  font-size: 1.5em;
+  text-align: center; /* Center the heading */
 }
 
-#settings {
-  margin-bottom: 20px;
-}
-
-.news-item {
-  margin-bottom: 15px;
+.news-item, .favorite-item {
   border: 1px solid #ccc;
+  margin: 10px 0;
   padding: 10px;
-  border-radius: 5px;
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  border-radius: 5px; /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
-.news-item img {
+.news-image {
+  width: 100%; /* Adjust image width to fit container */
+  height: auto; /* Maintain aspect ratio */
+  max-height: 150px; /* Set a max height for the image */
+  object-fit: cover; /* Ensure the image covers the area without distortion */
+  border-radius: 5px; /* Rounded corners for images */
+}
+
+.favorite-item {
+  display: flex;
+  justify-content: space-between; /* Space out article link and button */
+  align-items: center; /* Align items vertically */
+}
+
+.favorite-item button {
+  margin-left: 10px; /* Space between link and button */
+}
+
+/* Additional styles for buttons */
+button {
+  background-color: #007BFF; /* Bootstrap primary color */
+  color: white;
+  border: none;
+  padding: 5px 10px;
   border-radius: 5px;
+  cursor: pointer; /* Pointer cursor on hover */
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+.favorite-articles {
+  margin-top: 20px; /* Space above favorites section */
 }
