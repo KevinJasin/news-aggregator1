@@ -1,4 +1,4 @@
-const NEWS_API_KEY = "233a1a25653c4ba88e576208b7594220"; // Replace with your valid News API key
+const NEWS_API_KEY = ""; // Replace with your valid News API key
 
 // Function to fetch news based on selected topics
 async function fetchNews(topics) {
