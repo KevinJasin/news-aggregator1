@@ -11,6 +11,11 @@ body {
   color: #333; /* Dark text color */
 }
 
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
 .container {
   padding: 20px;
 }
@@ -32,13 +37,12 @@ label {
   display: block;
 }
 
-select {
+select, input[type="text"] {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  font-size: 1em;
 }
 
 button {
@@ -66,6 +70,16 @@ button:hover {
   border-radius: 5px; /* Rounded corners */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
   background-color: white; /* White background for items */
+  color: #333; /* Ensure text color is dark */
+}
+
+body.dark-mode .news-item, body.dark-mode .favorite-item {
+  background-color: #1e1e1e; /* Dark background for items */
+  color: #333; /* Ensure text color remains dark */
+}
+
+body.dark-mode .news-item h3 {
+  color: #ffffff; /* White color for article titles in dark mode */
 }
 
 .news-image {
@@ -114,4 +128,10 @@ button:hover {
 
 .favorite-item button {
   margin-left: 10px; /* Space between link and button */
+}
+
+.button-container {
+  display: flex;
+  justify-content: center; /* Center the buttons */
+  margin-top: 20px; /* Space above the buttons */
 }
