@@ -1,28 +1,71 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 body {
   margin: 0;
   padding: 0;
   width: 400px; /* Fixed width for the extension */
   overflow-x: hidden; /* Prevent horizontal scrolling */
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif; /* Use modern font */
+  background-color: #f4f4f9; /* Light background color */
+  color: #333; /* Dark text color */
 }
 
 .container {
-  padding: 10px;
+  padding: 20px;
 }
 
 h1 {
-  font-size: 1.5em;
+  font-size: 1.8em;
   text-align: center; /* Center the heading */
+  margin-bottom: 20px;
+  color: #007BFF; /* Primary color for heading */
+}
+
+#settings {
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 10px;
+  display: block;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+button {
+  background-color: #007BFF; /* Bootstrap primary color */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 1em;
+  margin-right: 10px;
+  transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
 }
 
 .news-item, .favorite-item {
   border: 1px solid #ccc;
   margin: 10px 0;
-  padding: 10px;
+  padding: 15px;
   display: flex;
   flex-direction: column; /* Stack elements vertically */
   border-radius: 5px; /* Rounded corners */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  background-color: white; /* White background for items */
 }
 
 .news-image {
@@ -31,6 +74,36 @@ h1 {
   max-height: 150px; /* Set a max height for the image */
   object-fit: cover; /* Ensure the image covers the area without distortion */
   border-radius: 5px; /* Rounded corners for images */
+  margin-bottom: 10px;
+}
+
+.news-item h3 {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+.news-item p {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.news-item em {
+  font-size: 0.8em;
+  color: #999;
+}
+
+.news-item a {
+  color: #007BFF;
+  text-decoration: none;
+  margin-top: 10px;
+}
+
+.news-item a:hover {
+  text-decoration: underline;
+}
+
+.favorite-articles {
+  margin-top: 20px; /* Space above favorites section */
 }
 
 .favorite-item {
@@ -41,22 +114,4 @@ h1 {
 
 .favorite-item button {
   margin-left: 10px; /* Space between link and button */
-}
-
-/* Additional styles for buttons */
-button {
-  background-color: #007BFF; /* Bootstrap primary color */
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer; /* Pointer cursor on hover */
-}
-
-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
-}
-
-.favorite-articles {
-  margin-top: 20px; /* Space above favorites section */
 }
