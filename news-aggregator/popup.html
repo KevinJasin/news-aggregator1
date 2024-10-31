@@ -10,15 +10,21 @@
   <div class="container">
     <h1>News Feed</h1>
     <div id="settings">
-      <label for="topic-select">Choose Topics:</label>
-      <select id="topic-select" multiple>
+      <label for="category-select">Choose Category:</label>
+      <select id="category-select">
+        <option value="business">Business</option>
+        <option value="entertainment">Entertainment</option>
+        <option value="health">Health</option>
         <option value="technology">Technology</option>
         <option value="sports">Sports</option>
         <option value="politics">Politics</option>
-        <!-- Add more options as desired -->
+        <!-- Add more categories as needed -->
       </select>
-      <button id="save-settings">Save Settings</button>
-      <button id="refresh-news">Refresh News</button> <!-- Button to refresh news -->
+      <div class="button-container">
+        <button id="save-settings">Save Settings</button>
+        <button id="refresh-news">Refresh News</button> <!-- Button to refresh news -->
+        <button id="toggle-dark-mode">Toggle Dark Mode</button>
+      </div>
     </div>
     <div id="news-feed"></div>
     <div id="favorite-articles" class="favorite-articles"></div> <!-- Section for favorite articles -->
