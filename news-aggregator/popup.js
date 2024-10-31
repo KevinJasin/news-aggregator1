@@ -1,163 +1,165 @@
-const NEWS_API_URL = "http://localhost:3000/news"; // Use your proxy server
+const NEWS_API_URL = "http://localhost:3000/news"; // Local proxy URL
+const OPENAI_API_KEY = ""; // OpenAI API Key for sentiment analysis
 
-// Function to fetch news based on selected topics
+// Function to get sentiment score for article title
+async function getSentimentScore(articleTitle) {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: `Rate sentiment of this title (1 to 10): "${articleTitle}"` }],
+        temperature: 0
+      })
+    });
+
+    const data = await response.json();
+    const sentimentScore = data.choices[0].message.content.trim();
+    return sentimentScore; // Returning sentiment score directly
+  } catch (error) {
+    console.error("Error fetching sentiment score:", error);
+    return null;
+  }
+}
+
+// Updated fetchNews function
 async function fetchNews(topics) {
-    const newsFeed = document.getElementById("news-feed");
-    newsFeed.innerHTML = "<p>Loading news...</p>"; // Show loading text
+  const newsFeed = document.getElementById("news-feed");
+  newsFeed.innerHTML = "<p>Loading news...</p>";
 
-    try {
-        const responses = await Promise.all(
-            topics.map((topic) =>
-                fetch(`${NEWS_API_URL}?topic=${topic}`) // Use proxy server
-            )
-        );
+  try {
+    // Fetch news articles from local proxy server
+    const responses = await Promise.all(
+      topics.map(topic =>
+        fetch(`${NEWS_API_URL}?q=${topic}`)
+      )
+    );
 
-        const dataResponses = await Promise.all(responses.map(async (res) => {
-            if (!res.ok) {
-                console.error(`HTTP error! status: ${res.status}`);
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-            return await res.json();
-        }));
+    const dataResponses = await Promise.all(responses.map(async (res) => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    }));
 
-        const articles = dataResponses.flatMap((data) => {
-            if (!data.articles) {
-                return []; // Return empty if articles are undefined
-            }
-            return data.articles; // Return articles if available
-        }).slice(0, 10); // Limit to 10 articles
+    const articles = dataResponses.flatMap(data => data.articles).slice(0, 10);
 
-        // Populate the news feed with articles
-        if (articles.length > 0) {
-            newsFeed.innerHTML = articles
-                .map((article) =>
-                    `<div class="news-item" data-url="${article.url}">
-                       <img src="${article.urlToImage}" alt="${article.title}" class="news-image" />
-                       <h3>${article.title}</h3>
-                       <p>${article.description || "No description available."}</p>
-                       <p><em>Source: ${article.source.name || 'Unknown'}</em></p>
-                       <button class="save-favorite">Save Favorite</button>
-                       <a href="${article.url}" target="_blank">Read more</a>
-                     </div>`
-                ).join("");
+    // Add sentiment scores to articles
+    const articlesWithSentiment = await Promise.all(articles.map(async (article) => {
+      const positivityScore = await getSentimentScore(article.title);
+      return { ...article, positivityScore };
+    }));
 
-            // Add event listeners for saving favorites
-            document.querySelectorAll(".save-favorite").forEach(button => {
-                button.addEventListener("click", function () {
-                    const articleUrl = this.closest(".news-item").getAttribute("data-url");
-                    saveFavorite(articleUrl); // Save favorite and update UI instantly
-                });
-            });
-        } else {
-            newsFeed.innerHTML = "<p>No articles found.</p>"; // If no articles were returned
-        }
-    } catch (error) {
-        console.error("Error fetching news:", error);
-        newsFeed.innerHTML = "<p>Failed to load news. Check console for details.</p>"; // Show error message
+    // Display articles in the news feed
+    if (articlesWithSentiment.length > 0) {
+      newsFeed.innerHTML = articlesWithSentiment.map(article => `
+        <div class="news-item">
+          <img class="news-image" src="${article.urlToImage}" alt="${article.title}">
+          <h3>${article.title}</h3>
+          <p>${article.description || "No description available."}</p>
+          <p><em>Source: ${article.source.name || "Unknown"}</em></p>
+          <p>Positivity Score: ${article.positivityScore}/10</p>
+          <button onclick="saveFavorite('${article.url}')">Save Article</button>
+          <a href="${article.url}" target="_blank">Read more</a>
+        </div>
+      `).join("");
+    } else {
+      newsFeed.innerHTML = "<p>No articles found.</p>";
     }
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    newsFeed.innerHTML = "<p>Failed to load news. Check console for details.</p>";
+  }
 }
 
 // Function to save favorite articles
 function saveFavorite(url) {
-    chrome.storage.sync.get(["favorites"], function (data) {
-        const favorites = data.favorites || [];
-        
-        // Check if the article is already in favorites
-        if (!favorites.includes(url)) {
-            favorites.push(url); // Add new article URL
-            chrome.storage.sync.set({ favorites }, () => {
-                alert("Article saved to favorites!");
-                loadFavorites(); // Refresh favorites display
-            });
-        } else {
-            alert("This article is already in your favorites."); // Alert if already exists
-        }
-    });
+  chrome.storage.sync.get(["favorites"], function (data) {
+    const favorites = data.favorites || [];
+    
+    // Check if the article is already in favorites
+    if (!favorites.includes(url)) {
+      favorites.push(url); // Add new article URL
+      chrome.storage.sync.set({ favorites }, () => {
+        alert("Article saved to favorites!");
+        loadFavorites(); // Refresh favorites display with the updated list
+      });
+    } else {
+      alert("This article is already in your favorites."); // Alert if already exists
+    }
+  });
 }
 
 // Function to remove a favorite article
 function removeFavorite(url) {
-    chrome.storage.sync.get(["favorites"], function (data) {
-        const favorites = data.favorites || [];
-        const updatedFavorites = favorites.filter(fav => fav !== url); // Remove the specific article
-        chrome.storage.sync.set({ favorites: updatedFavorites }, () => {
-            alert("Article removed from favorites!");
-            loadFavorites(); // Refresh favorites display
-        });
+  chrome.storage.sync.get(["favorites"], function (data) {
+    const favorites = data.favorites || [];
+    const updatedFavorites = favorites.filter(fav => fav !== url); // Remove the specific article
+    chrome.storage.sync.set({ favorites: updatedFavorites }, () => {
+      alert("Article removed from favorites!");
+      loadFavorites(); // Refresh favorites display with the updated list
     });
+  });
 }
 
-// Function to load and display saved topics and favorites
-async function loadSavedTopicsAndFavorites() {
-    const topicSelect = document.getElementById("topic-select");
-    const saveButton = document.getElementById("save-settings");
-    const refreshButton = document.getElementById("refresh-news");
+// Load and display saved favorite articles
+function loadFavorites() {
+  chrome.storage.sync.get(["favorites"], function (data) {
+    const favorites = data.favorites || [];
+    const favoriteContainer = document.getElementById("favorite-articles");
 
-    // Load saved topics on startup
-    chrome.storage.sync.get(["topics", "favorites"], function (data) {
-        if (data.topics) {
-            data.topics.forEach((topic) => {
-                for (let option of topicSelect.options) {
-                    if (option.value === topic) {
-                        option.selected = true; // Select saved topics
-                    }
-                }
-            });
-            // Fetch news for the saved topics
-            fetchNews(data.topics);
-        }
-
-        // Load saved favorite articles
-        loadFavorites(data.favorites);
-    });
-
-    // Save selected topics and refresh the news feed
-    saveButton.addEventListener("click", () => {
-        const selectedTopics = Array.from(topicSelect.selectedOptions).map(
-            (option) => option.value
-        );
-
-        chrome.storage.sync.set({ topics: selectedTopics }, () => {
-            alert("Topics saved!"); // Confirmation message
-            // Fetch news for the newly saved topics
-            fetchNews(selectedTopics);
-        });
-    });
-
-    // Refresh news feed on button click
-    refreshButton.addEventListener("click", () => {
-        const selectedTopics = Array.from(topicSelect.selectedOptions).map(
-            (option) => option.value
-        );
-        fetchNews(selectedTopics); // Fetch news again
-    });
-}
-
-// Function to load and display favorite articles
-function loadFavorites(favorites = []) {
-    const favoritesSection = document.getElementById("favorite-articles");
-    favoritesSection.innerHTML = '';
-    if (favorites && favorites.length > 0) {
-        favorites.forEach((url) => {
-            favoritesSection.innerHTML += `
-                <div class="favorite-item" data-url="${url}">
-                    <a href="${url}" target="_blank">${url}</a>
-                    <button class="remove-favorite">Remove</button>
-                </div>
-            `;
-        });
-
-        // Attach event listeners to remove buttons
-        document.querySelectorAll('.remove-favorite').forEach(button => {
-            button.addEventListener('click', function () {
-                const articleUrl = this.closest('.favorite-item').getAttribute('data-url');
-                removeFavorite(articleUrl); // Call remove function
-            });
-        });
+    if (favorites.length === 0) {
+      favoriteContainer.innerHTML = "<p>No saved articles.</p>";
     } else {
-        favoritesSection.innerHTML = "<p>No favorite articles found.</p>";
+      favoriteContainer.innerHTML = favorites.map(url => `
+        <div class="favorite-item">
+          <h4>${url}</h4>
+          <button onclick="removeFavorite('${url}')">Remove</button>
+        </div>
+      `).join("");
     }
+  });
 }
 
-// Load saved topics and favorites when the document is ready
-document.addEventListener("DOMContentLoaded", loadSavedTopicsAndFavorites);
+// Load topics and fetch news on extension load
+document.addEventListener("DOMContentLoaded", function () {
+  const topicSelect = document.getElementById("topic-select");
+  const saveButton = document.getElementById("save-settings");
+  const refreshButton = document.getElementById("refresh-news");
+
+  // Load saved topics and fetch news on startup
+  chrome.storage.sync.get(["topics"], function (data) {
+    if (data.topics) {
+      data.topics.forEach((topic) => {
+        for (let option of topicSelect.options) {
+          if (option.value === topic) {
+            option.selected = true;
+          }
+        }
+      });
+      fetchNews(data.topics);
+    }
+    loadFavorites(); // Load favorites on startup
+  });
+
+  // Save selected topics and refresh news feed
+  saveButton.addEventListener("click", () => {
+    const selectedTopics = Array.from(topicSelect.selectedOptions).map(
+      (option) => option.value
+    );
+    chrome.storage.sync.set({ topics: selectedTopics }, () => {
+      alert("Topics saved!");
+      fetchNews(selectedTopics);
+    });
+  });
+
+  // Refresh news feed manually
+  refreshButton.addEventListener("click", () => {
+    const selectedTopics = Array.from(topicSelect.selectedOptions).map(
+      (option) => option.value
+    );
+    fetchNews(selectedTopics);
+  });
+});
